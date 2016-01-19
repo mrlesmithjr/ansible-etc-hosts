@@ -3,6 +3,8 @@ Role Name
 
 Configures /etc/hosts
 
+[![Build Status](https://travis-ci.org/mrlesmithjr/ansible-etc-hosts.svg?branch=master)](https://travis-ci.org/mrlesmithjr/ansible-etc-hosts)
+
 Requirements
 ------------
 
