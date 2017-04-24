@@ -1,25 +1,5 @@
 ---
 # tasks file for ansible-etc-hosts
-- name: pre-reqs (RedHat)
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - libselinux-python
-  when: >
-        ansible_os_family == "RedHat" and
-        ansible_distribution != "Fedora"
-
-- name: pre-reqs (RedHat)
-  dnf:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - libselinux-python
-  when: >
-        ansible_os_family == "RedHat" and
-        ansible_distribution == "Fedora"
-
 - name: main | updating /etc/hosts (localhost)
   template:
     src: "etc/hosts.j2"
@@ -27,30 +7,4 @@
     owner: root
     group: root
     mode: 0644
-
-- name: main | updating /etc/hosts (All hosts in play)
-  lineinfile:
-    dest: "/etc/hosts"
-    regexp: ".*{{ item }}$"
-    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
-    state: "present"
-  with_items: '{{ groups.all }}'
-  when: >
-        (etc_hosts_add_all_hosts is defined and
-          etc_hosts_add_all_hosts) and
-        hostvars[item].ansible_default_ipv4.address is defined and
-        etc_hosts_use_default_ip_address and
-        not etc_hosts_use_ansible_host
-
-- name: main | updating /etc/hosts (All hosts in play)
-  lineinfile:
-    dest: "/etc/hosts"
-    regexp: ".*{{ item }}$"
-    line: "{{ hostvars[item]['ansible_ssh_host'] }} {{ item }}"
-    state: "present"
-  with_items: '{{ groups.all }}'
-  when: >
-        (etc_hosts_add_all_hosts is defined and
-          etc_hosts_add_all_hosts) and
-        not etc_hosts_use_default_ip_address and
-        etc_hosts_use_ansible_ssh_host
+  become: true
