@@ -1,11 +1,32 @@
-127.0.0.1	localhost
-{% if etc_hosts_static_ip is defined and etc_hosts_static_ip and etc_hosts_use_default_ip_address %}
-{{ ansible_default_ipv4.address }} {{ ansible_hostname }}.{{ pri_domain_name }} {{ ansible_hostname }}
-{% elif (etc_hosts_static_ip is defined and not etc_hosts_static_ip) or etc_hosts_static_ip is not defined %}
-127.0.1.1 {{ ansible_hostname }}.{{ pri_domain_name }} {{ ansible_hostname }}
+127.0.0.1 localhost
+
+{% if not etc_hosts_add_all_hosts %}
+{%   if not etc_hosts_static_ip %}
+{%     if ansible_fqdn != (ansible_hostname + '.' + etc_hosts_pri_dns_name) %}
+127.0.1.1 {{ ansible_hostname }}.{{ etc_hosts_pri_dns_name }} {{ ansible_hostname }}
+{%     elif ansible_fqdn == (ansible_hostname + '.' + etc_hosts_pri_dns_name) %}
+127.0.1.1 {{ ansible_fqdn }} {{ ansible_hostname }}
+{%     endif %}
+{%   elif etc_hosts_static_ip %}
+{{ ansible_ssh_host }} {{ ansible_fqdn }} {{ ansible_hostname }}
+{%   endif %}
+{% elif etc_hosts_add_all_hosts %}
+{%   for host in play_hosts %}
+{%     if etc_hosts_use_default_ip_address and not etc_hosts_use_ansible_ssh_host %}
+{{ hostvars[host]['ansible_default_ipv4']['address'] }} {{ hostvars[host]['ansible_fqdn'] }}.{{ etc_hosts_pri_dns_name }} {{ hostvars[host]['ansible_hostname'] }}
+{%     elif not etc_hosts_use_default_ip_address and etc_hosts_use_ansible_ssh_host %}
+{%       if hostvars[host]['ansible_fqdn'] != (hostvars[host]['ansible_hostname']+ '.' + etc_hosts_pri_dns_name) %}
+{{ hostvars[host]['ansible_ssh_host'] }} {{ hostvars[host]['ansible_hostname'] }}.{{ etc_hosts_pri_dns_name }} {{ hostvars[host]['ansible_hostname'] }}
+{%       elif hostvars[host]['ansible_fqdn'] == (hostvars[host]['ansible_hostname']+ '.' + etc_hosts_pri_dns_name) %}
+{{ hostvars[host]['ansible_ssh_host'] }} {{ hostvars[host]['ansible_fqdn'] }} {{ hostvars[host]['ansible_hostname'] }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
 {% endif %}
 
+{% if etc_hosts_enable_ipv6 %}
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
+{% endif %}
