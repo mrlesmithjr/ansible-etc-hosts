@@ -41,7 +41,7 @@
 {%   for host in play_hosts %}
 {%     if (hostvars[host]['ansible_domain'] == etc_hosts_pri_dns_name) or hostvars[host]['ansible_domain'] == '' %}
 {%       if etc_hosts_use_default_ip_address and not etc_hosts_use_ansible_ssh_host %}
-{{ hostvars[host]['ansible_default_ipv4']['address'] }} {{ hostvars[host]['ansible_fqdn'] }}.{{ etc_hosts_pri_dns_name }} {{ hostvars[host]['ansible_hostname'] }}
+{{ hostvars[host]['ansible_default_ipv4']['address'] }} {{ hostvars[host]['ansible_fqdn'] }} {{ hostvars[host]['ansible_hostname'] }}
 {%       elif not etc_hosts_use_default_ip_address and etc_hosts_use_ansible_ssh_host %}
 {%         if hostvars[host]['ansible_fqdn'] != (hostvars[host]['ansible_hostname']+ '.' + etc_hosts_pri_dns_name) %}
 {%           if hostvars[host]['ansible_ssh_host'] is defined %}
