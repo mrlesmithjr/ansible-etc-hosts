@@ -1,7 +1,7 @@
 ---
 # tasks file for ansible-etc-hosts
 - name: pre-reqs (RedHat)
-  yum:
+  package:
     name: ["libselinux-python"]
     state: present
   become: true
@@ -9,18 +9,18 @@
   until: result is successful
   when: >
     ansible_os_family == "RedHat" and
-    ansible_distribution != "Fedora"
+    ansible_python_version <= "2"
 
 - name: pre-reqs (RedHat)
-  dnf:
-    name: ["libselinux-python"]
+  package:
+    name: ["python3-libselinux"]
     state: present
   become: true
   register: result
   until: result is successful
   when: >
     ansible_os_family == "RedHat" and
-    ansible_distribution == "Fedora"
+    ansible_distribution >= "3"
 
 - name: main | updating /etc/hosts (localhost)
   template:
