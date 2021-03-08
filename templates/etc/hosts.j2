@@ -1,3 +1,5 @@
+# {{ ansible_managed }}
+
 127.0.0.1 localhost
 
 {% if not etc_hosts_add_all_hosts %}
@@ -41,7 +43,7 @@
 {%   for host in play_hosts %}
 {%     if (hostvars[host]['ansible_domain'] == etc_hosts_pri_dns_name) or hostvars[host]['ansible_domain'] == '' %}
 {%       if etc_hosts_use_default_ip_address and not etc_hosts_use_ansible_ssh_host %}
-{{ hostvars[host]['ansible_default_ipv4']['address'] }} {{ hostvars[host]['ansible_fqdn'] }}.{{ etc_hosts_pri_dns_name }} {{ hostvars[host]['ansible_hostname'] }}
+{{ hostvars[host]['ansible_default_ipv4']['address'] }} {{ hostvars[host]['ansible_fqdn'] }} {{ hostvars[host]['ansible_hostname'] }}
 {%       elif not etc_hosts_use_default_ip_address and etc_hosts_use_ansible_ssh_host %}
 {%         if hostvars[host]['ansible_fqdn'] != (hostvars[host]['ansible_hostname']+ '.' + etc_hosts_pri_dns_name) %}
 {%           if hostvars[host]['ansible_ssh_host'] is defined %}
@@ -72,6 +74,28 @@
 {%     endif %}
 {%   endfor %}
 {% endif %}
+{% if etc_hosts_add_custom_hosts is defined and etc_hosts_add_custom_hosts %}
+{%   for key, val in etc_hosts_add_custom_hosts.items() %}
+{%-    if key != inventory_hostname -%}
+{%       if (etc_hosts_pri_dns_name is defined and etc_hosts_pri_dns_name) %}
+{%         if key.endswith(etc_hosts_pri_dns_name) %}
+{{ val }} {{ key }} {{ key[:-(etc_hosts_pri_dns_name|length+1)] }}
+{%         else %}
+{{ val }} {{ key }}
+{%         endif %}
+{%       elif (ansible_domain is defined and ansible_domain) %}
+{%         if key.endswith(ansible_domain) %}
+{{ val }} {{ key }} {{ key[:-(ansible_domain|length+1)] }}
+{%         else %}
+{{ val }} {{ key }}
+{%         endif %}
+{%       else %}
+{{ val }} {{ key }}
+{%       endif %}
+{%-    endif -%} 
+{%   endfor %}
+{% endif %}
+
 
 {% if etc_hosts_enable_ipv6 %}
 # The following lines are desirable for IPv6 capable hosts
